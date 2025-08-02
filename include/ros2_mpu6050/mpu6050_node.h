@@ -4,6 +4,7 @@
 #include "ros2_mpu6050/mpu6050.h"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/imu.hpp"
+#include "tf2/LinearMath/Quaternion.h"
 
 class Mpu6050Node : public rclcpp::Node {
  public:
@@ -21,6 +22,11 @@ class Mpu6050Node : public rclcpp::Node {
   double accel_x_offset_ {0.0};
   double accel_y_offset_ {0.0};
   double accel_z_offset_ {0.0};
+
+  double pitch_ {0.0};
+  double roll_ {0.0};
+  rclcpp::Time last_time_;
+  tf2::Quaternion orientation_quaternion_;
 
 };
 
