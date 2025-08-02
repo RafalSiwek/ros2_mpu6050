@@ -14,7 +14,7 @@ find_package(tf2 REQUIRED)
 include_directories(include)
 
 add_executable(ros2_mpu6050 src/mpu6050.cpp src/mpu6050_hal.cpp src/mpu6050_node.cpp)
-ament_target_dependencies(ros2_mpu6050 rclcpp sensor_msgs tf2)
+ament_target_dependencies(ros2_mpu6050 rclcpp sensor_msgs std_msgs tf2)
 target_link_libraries(ros2_mpu6050 i2c)
 
 add_executable(ros2_mpu6050_calibrate src/mpu6050.cpp src/mpu6050_hal.cpp src/mpu6050_calibrate.cpp)
