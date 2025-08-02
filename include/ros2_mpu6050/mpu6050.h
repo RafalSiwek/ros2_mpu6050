@@ -31,12 +31,15 @@
 
 #ifndef MPU6050SENSOR_H
 #define MPU6050SENSOR_H
+#define _USE_MATH_DEFINES
 
 #include "ros2_mpu6050/mpu6050_hal.h"
 
 #include <string>
 #include <memory>
 #include <cstdint>
+#include <cmath>
+
 
 class Mpu6050 {
 public:

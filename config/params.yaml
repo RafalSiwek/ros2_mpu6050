@@ -46,3 +46,6 @@ mpu6050_sensor:
     accel_x_offset: 0.0
     accel_y_offset: 0.0
     accel_z_offset: 0.0
+
+    # Complementary filter alpha
+    alpha: 0.98
