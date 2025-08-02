@@ -4,7 +4,7 @@
 #include "ros2_mpu6050/mpu6050.h"
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/imu.hpp"
-#include "std_msgs/msg/bool.hpp" // Add this include
+#include "std_msgs/msg/bool.hpp"
 #include "tf2/LinearMath/Quaternion.h"
 
 class Mpu6050Node : public rclcpp::Node {
@@ -13,11 +13,11 @@ class Mpu6050Node : public rclcpp::Node {
 
  private:
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr publisher_;
-  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr calibration_subscriber_; // Add this
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr calibration_subscriber_;
   std::unique_ptr<Mpu6050> mpu6050_dev_;
   rclcpp::TimerBase::SharedPtr timer_;
   void ImuPubCallback();
-  void CalibrationCallback(const std_msgs::msg::Bool::SharedPtr msg); // Add this
+  void CalibrationCallback(const std_msgs::msg::Bool::SharedPtr msg);
 
   double gyro_x_offset_ {0.0};
   double gyro_y_offset_ {0.0};

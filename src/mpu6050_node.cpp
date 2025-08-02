@@ -10,9 +10,17 @@ Mpu6050Node::Mpu6050Node(const std::string& name)
     : Node(name)
     , mpu6050_dev_{std::make_unique<Mpu6050>()}
 {
-    // ... (parameter declarations are the same)
+    this->declare_parameter<int>("gyro_fs_sel", 0);
+    this->declare_parameter<int>("accel_afs_sel", 0);
+    this->declare_parameter<int>("dlpf_cfg", 0);
+    this->declare_parameter<int>("clock_src", 0);
+    this->declare_parameter<double>("gyro_x_offset", 0.0);
+    this->declare_parameter<double>("gyro_y_offset", 0.0);
+    this->declare_parameter<double>("gyro_z_offset", 0.0);
+    this->declare_parameter<double>("accel_x_offset", 0.0);
+    this->declare_parameter<double>("accel_y_offset", 0.0);
+    this->declare_parameter<double>("accel_z_offset", 0.0);
 
-    // Assign offset values from parameters as initial defaults
     gyro_x_offset_ = this->get_parameter("gyro_x_offset").as_double();
     gyro_y_offset_ = this->get_parameter("gyro_y_offset").as_double();
     gyro_z_offset_ = this->get_parameter("gyro_z_offset").as_double();
@@ -20,7 +28,10 @@ Mpu6050Node::Mpu6050Node(const std::string& name)
     accel_y_offset_ = this->get_parameter("accel_y_offset").as_double();
     accel_z_offset_ = this->get_parameter("accel_z_offset").as_double();
 
-    // ... (sensor parameter assignments are the same)
+    mpu6050_dev_->Mpu6050_GyroFsSel(static_cast<Mpu6050::Mpu6050_FsSel_t>(this->get_parameter("gyro_fs_sel").as_int()));
+    mpu6050_dev_->Mpu6050_AccelFsSel(static_cast<Mpu6050::Mpu6050_AfsSel_t>(this->get_parameter("accel_afs_sel").as_int()));
+    mpu6050_dev_->Mpu6050_DlpfConfig(static_cast<Mpu6050::Mpu6050_DlpfCfg_t>(this->get_parameter("dlpf_cfg").as_int()));
+    mpu6050_dev_->Mpu6050_ClockSelect(static_cast<Mpu6050::Mpu6050_ClkSrc_t>(this->get_parameter("clock_src").as_int()));
 
     publisher_ = this->create_publisher<sensor_msgs::msg::Imu>("imu/mpu6050", 10);
     calibration_subscriber_ = this->create_subscription<std_msgs::msg::Bool>(
@@ -70,14 +81,13 @@ void Mpu6050Node::ImuPubCallback()
             gyro_z_offset_ = calib_gyro_z_sum_ / calibration_samples_;
             accel_x_offset_ = calib_accel_x_sum_ / calibration_samples_;
             accel_y_offset_ = calib_accel_y_sum_ / calibration_samples_;
-            // Z-axis is perpendicular to gravity, so its reading should be 0.
             accel_z_offset_ = calib_accel_z_sum_ / calibration_samples_;
 
             RCLCPP_INFO(this->get_logger(), "IMU calibration finished.");
             RCLCPP_INFO(this->get_logger(), "New Gyro Offsets: x=%.4f, y=%.4f, z=%.4f", gyro_x_offset_, gyro_y_offset_, gyro_z_offset_);
             RCLCPP_INFO(this->get_logger(), "New Accel Offsets: x=%.4f, y=%.4f, z=%.4f", accel_x_offset_, accel_y_offset_, accel_z_offset_);
         }
-        return; // Skip publishing during calibration
+        return;
     }
 
     auto message = sensor_msgs::msg::Imu();
@@ -95,7 +105,6 @@ void Mpu6050Node::ImuPubCallback()
     message.angular_velocity.z = (GyroData.Gyro_Z - gyro_z_offset_) * (M_PI / 180.0);
     message.angular_velocity_covariance = {0.01, 0, 0, 0, 0.01, 0, 0, 0, 0.01};
 
-    // Complementary filter for orientation
     double dt = (current_time - last_time_).seconds();
     last_time_ = current_time;
 

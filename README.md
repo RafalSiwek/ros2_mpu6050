@@ -27,81 +27,63 @@ To run this example without issues, the following environment setup are preferre
 
 ### Sensor Calibration
 
-The following steps provides detailed info to calibrate the sensor if necessary:
+There are two methods to calibrate the sensor:
 
-1. Build the package
-```bash
-colcon build --packages-select ros2_mpu6050
-```
-2. RPi to MPU6050 I2C wiring 
-3. Place the sensor in a surface perpendicular to the direction of the gravitational acceleration. (**This is important)
-4. Run the following command
-```bash
-ros2 run ros2_mpu6050 ros2_mpu6050_calibrate
-```
-5. The values of the offsets should be displayed
-```bash
-I2c communication started. .
-MPU6050 initialization successful
+**Method 1: Manual Calibration**
 
-**** Starting calibration ****
-Ensure that the mpu6050 board is positioned in a surface perpendicular to the direction gravitational accelleration
-This may take a while depending upon the no of samples, please wait. . .
+This method is useful for finding initial offset values.
 
+1.  Build the package
+    ```bash
+    colcon build --packages-select ros2_mpu6050
+    ```
+2.  Ensure your RPi is connected to the MPU6050 via I2C.
+3.  Place the sensor on a flat, level surface. The Z-axis should be perpendicular to the ground.
+4.  Run the calibration script:
+    ```bash
+    ros2 run ros2_mpu6050 ros2_mpu6050_calibrate
+    ```
+5.  The script will output the calculated offsets:
+    ```bash
+    I2c communication started. .
+    MPU6050 initialization successful
+    
+    **** Starting calibration ****
+    Ensure that the mpu6050 board is positioned in a surface perpendicular to the direction gravitational accelleration
+    This may take a while depending upon the no of samples, please wait. . .
+    
+    
+    In the params.yaml file under config directory, copy the following results accordingly
+    
+    Gyroscope Offsets: 
+    gyro_x_offset --> -1.44153
+    gyro_y_offset --> 0.596412
+    gyro_z_offset --> 0.618626
+    
+    Accelerometer Offsets: 
+    accel_x_offset --> 10.601
+    accel_y_offset --> -0.424632
+    accel_z_offset --> -3.21498
+    ```
+6.  Copy these values into the `config/params.yaml` file, replacing the default `0.0` values.
 
-In the params.yaml file under config directory, copy the following results accordingly
+**Method 2: On-Demand Calibration via ROS2 Topic**
 
-Gyroscope Offsets: 
-gyro_x_offset --> -1.44153
-gyro_y_offset --> 0.596412
-gyro_z_offset --> 0.618626
+This method allows you to re-calibrate the sensor on-the-fly without stopping the node.
 
-Accelerometer Offsets: 
-accel_x_offset --> 10.601
-accel_y_offset --> -0.424632
-accel_z_offset --> -3.21498
-```
-6. Copy these values in the params.yaml file under config directory of the package replacing the 0 values
-```bash
-# [deg/s]
-gyro_x_offset: 0.0
-gyro_y_offset: 0.0
-gyro_z_offset: 0.0
-# [m/s²]
-accel_x_offset: 0.0
-accel_y_offset: 0.0
-accel_z_offset: 0.0
-```
+1.  Launch the main MPU6050 node:
+    ```bash
+    ros2 launch ros2_mpu6050 ros2_mpu6050.launch.py
+    ```
+2.  Place the sensor in its calibration position (Z-axis perpendicular to the ground).
+3.  Publish a message to the `/imu/calibrate` topic to start the calibration process.
+    ```bash
+    ros2 topic pub /imu/calibrate std_msgs/msg/Bool "data: true"
+    ```
+4.  The node will collect a number of samples to determine the new offsets. During this time, it will not publish any IMU data. Once complete, the new offsets will be printed in the node's console, and it will resume publishing corrected IMU data.
 
 ## Starting the ros2_mpu6050 node
 
 Build the package
 ```bash
 colcon build --packages-select ros2_mpu6050
-```
-and execute the following command.
-
-```bash
-ros2 launch ros2_mpu6050 ros2_mpu6050.launch.py
-```
-Build specific package
-
-```bash
-colcon build --packages-select `name_of_package`
-```
-
-## Listening to the IMU topic
-
-After launching ros2_mpu6050.launch.py,
-
-In the host PC or in the RPi SSH client terminal, does not matter, execute the following command
-
-```bash
-ros2 topic echo /imu/mpu6050
-```
-
-If the above command does not work, ensure that the /imu/mpu6050 topic shows when running the following command
-
-```bash
-ros2 topic list
-```
