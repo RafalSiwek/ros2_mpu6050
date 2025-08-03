@@ -20,7 +20,7 @@ Mpu6050Node::Mpu6050Node(const std::string& name)
     this->declare_parameter<double>("gyro_y_offset", 0.0);
     this->declare_parameter<double>("gyro_z_offset", 0.0);
     this->declare_parameter<double>("accel_x_offset", 0.0);
-    this.declare_parameter<double>("accel_y_offset", 0.0);
+    this->declare_parameter<double>("accel_y_offset", 0.0);
     this->declare_parameter<double>("accel_z_offset", 0.0);
     this->declare_parameter<double>("alpha", 0.98);
     this->declare_parameter<bool>("publish_euler", true);
