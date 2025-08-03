@@ -5,6 +5,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/imu.hpp"
 #include "std_msgs/msg/empty.hpp"
+#include "std_msgs/msg/float32_multi_array.hpp"
+
 
 class Mpu6050Node : public rclcpp::Node {
  public:
@@ -12,6 +14,7 @@ class Mpu6050Node : public rclcpp::Node {
 
  private:
   rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr publisher_;
+  rclcpp::Publisher<std_msgs::msg::Float32MultiArray>::SharedPtr euler_publisher_;
   std::unique_ptr<Mpu6050> mpu6050_dev_;
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr recalibrate_subscriber_;
@@ -31,6 +34,8 @@ class Mpu6050Node : public rclcpp::Node {
   double yaw_{0.0};
 
   double alpha_{0.98};
+  
+  bool publish_euler_{false};
 
   rclcpp::Time last_time_;
 };

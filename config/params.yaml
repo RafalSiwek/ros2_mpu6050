@@ -49,3 +49,6 @@ mpu6050_sensor:
 
     # Complementary filter alpha
     alpha: 0.98
+
+    # Publish euler angles
+    publish_euler: true

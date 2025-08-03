@@ -20,9 +20,10 @@ Mpu6050Node::Mpu6050Node(const std::string& name)
     this->declare_parameter<double>("gyro_y_offset", 0.0);
     this->declare_parameter<double>("gyro_z_offset", 0.0);
     this->declare_parameter<double>("accel_x_offset", 0.0);
-    this->declare_parameter<double>("accel_y_offset", 0.0);
+    this.declare_parameter<double>("accel_y_offset", 0.0);
     this->declare_parameter<double>("accel_z_offset", 0.0);
     this->declare_parameter<double>("alpha", 0.98);
+    this->declare_parameter<bool>("publish_euler", true);
 
 
     /* Assign offset values */
@@ -33,6 +34,7 @@ Mpu6050Node::Mpu6050Node(const std::string& name)
     accel_y_offset_ = this->get_parameter("accel_y_offset").as_double();
     accel_z_offset_ = this->get_parameter("accel_z_offset").as_double();
     alpha_ = this->get_parameter("alpha").as_double();
+    publish_euler_ = this->get_parameter("publish_euler").as_bool();
 
 
     /* Assign sensor paramaters */
@@ -42,6 +44,11 @@ Mpu6050Node::Mpu6050Node(const std::string& name)
     mpu6050_dev_->Mpu6050_ClockSelect(static_cast<Mpu6050::Mpu6050_ClkSrc_t>(this->get_parameter("clock_src").as_int()));
 
     publisher_ = this->create_publisher<sensor_msgs::msg::Imu>("imu/mpu6050", 10);
+    
+    if (publish_euler_) {
+        euler_publisher_ = this->create_publisher<std_msgs::msg::Float32MultiArray>("imu/euler", 10);
+    }
+
 
     timer_ = this->create_wall_timer(10ms, std::bind(&Mpu6050Node::ImuPubCallback, this));
 
@@ -106,6 +113,13 @@ void Mpu6050Node::ImuPubCallback()
     // Complementary filter
     roll_ = alpha_ * roll_ + (1.0 - alpha_) * roll_acc;
     pitch_ = alpha_ * pitch_ + (1.0 - alpha_) * pitch_acc;
+    
+    if(publish_euler_){
+        auto euler_msg = std_msgs::msg::Float32MultiArray();
+        euler_msg.data = { (float)roll_, (float)pitch_, (float)yaw_ };
+        euler_publisher_->publish(euler_msg);
+    }
+
 
     // Convert Euler to Quaternion
     tf2::Quaternion q;
